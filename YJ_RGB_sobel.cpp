@@ -33,7 +33,7 @@
 #include <thread>
 #include <mutex>
 #include <numeric>
-
+#include <filesystem>
 #include <sstream>
 #include <iomanip>
 
@@ -93,7 +93,7 @@ DEF_ENV_PARAM(SAMPLES_BATCH_NUM, "0");
 
 using namespace std;
 using namespace cv;
-
+namespace fs = std::filesystem;
 ofstream ofs;
 mutex mtx;
 bool index_record = false;
@@ -529,6 +529,20 @@ struct DecodeThread : public MyThread {
       cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
       cap.set(cv::CAP_PROP_FRAME_HEIGHT, 360);
     }
+    if(index_record){
+    		std::string folderName = "camera_image/images";
+
+    		if (!fs::exists(folderName)) {
+    			if (fs::create_directories(folderName)) {
+    				std::cout << "successfully created folder: " << folderName << std::endl;
+    			} else {
+    				std::cout << "Failed to create folder: " << folderName << std::endl;
+    			}
+    		} else {
+    			std::cout << "Folder already exists: " << folderName << std::endl;
+    		}
+    		folder_path_ = folderName;
+        }
   }
 
 //  virtual ~DecodeThread() {}
@@ -544,6 +558,12 @@ struct DecodeThread : public MyThread {
       open_stream();
       return 0;
     }
+    if(index_record){
+        	string str = to_string(frame_id_ + 1);
+        	str.insert(0, 6 - str.length(), '0');
+        	string file_name = folder_path_ + "/" + str + ".jpg";
+        	imwrite(file_name, grayscale);
+        }
 //    imwrite(std::string("RealShot_IR/images_choice_image_sequence/") + std::to_string(frame_id_) +  "_input.jpg", image);
     cv::Mat image;
     //**********************************************************
@@ -592,6 +612,7 @@ struct DecodeThread : public MyThread {
   unique_ptr<PPHandle> handle_;
   int height_;
   int width_;
+  string folder_path_;
 };
 
 
@@ -724,6 +745,7 @@ struct DpuThread : public MyThread {
     //原圖:等比例放大
     resize(frame.mat, frame.mat, Size(0, 0), FrmResize, FrmResize);
     FrameInfo frame_info;
+    string lable_folder="camera_image/labels";
 //    cout<<frame_info.frame_id<<"frame_id ~~~~~~"<<endl;
 
 
@@ -791,7 +813,25 @@ struct DpuThread : public MyThread {
               stringstream ss;
               ss << setw(6) << setfill('0') << frame.frame_id ;
               ss>>strr;
-              ofs.open("ai_result/labels/"+strr+".txt",ios::trunc);
+
+
+              if (!fs::exists(lable_folder)) {
+                  	  			if (fs::create_directories(lable_folder)) {
+                  	  				std::cout << "successfully created folder: " << lable_folder << std::endl;
+                  	  			} else {
+                  	  				std::cout << "Failed to create folder: " << lable_folder << std::endl;
+                  	  			}
+                  	  		}
+                  	  else {
+                  	  			std::cout << "Folder already exists: " << lable_folder << std::endl;
+                  	  		}
+
+
+                  	  ofs.open(lable_folder+"/"+strr+".txt",ios::trunc);
+
+
+
+//              ofs.open("ai_result/labels/"+strr+".txt",ios::trunc);
               }
 
 
