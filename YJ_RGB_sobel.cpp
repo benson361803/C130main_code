@@ -351,7 +351,7 @@ static void usage() {                                   //~將命令列引數印
 inline void parse_opt(int argc, char *argv[]) {         //~[自訂函式]解析命令列引數(argc, argv):由字符串(optstring) 劃分命令列引數(argv)
   int opt = 0;                                          //~opt表示為選項(option)
 
-  while ((opt = getopt(argc, argv, "t:s:l:n:r:")) != -1) {  //~函式getopt()用來分析命令列引數,不斷讀取命令列引數,直到讀取完為止
+  while ((opt = getopt(argc, argv, "t:s:l:n:r")) != -1) {  //~函式getopt()用來分析命令列引數,不斷讀取命令列引數,直到讀取完為止
     switch (opt) {
       case 't':
         g_num_of_threads = std::stoi(optarg);           //~執行緒數量 = 數字字符串(string)轉換成整數(int)輸出
@@ -367,7 +367,7 @@ inline void parse_opt(int argc, char *argv[]) {         //~[自訂函式]解析�
         break;
       case 'r':
     	  index_record=true;
-    	  file_name=optarg;
+
        break;
       default:
         usage();                                        //~自訂函數usage():將命令列引數印出
@@ -548,6 +548,7 @@ struct DecodeThread : public MyThread {
 //  virtual ~DecodeThread() {}
 
   virtual int run() override {
+	std::this_thread::sleep_for(std::chrono::milliseconds(200));
     auto& cap = *video_stream_.get();
     cv::Mat grayscale;
     cap >> grayscale;

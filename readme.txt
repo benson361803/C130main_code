@@ -1,0 +1,1 @@
+./dpu_trd yolov5s_191.xmodel image_sequence/%04d.jpg -r
