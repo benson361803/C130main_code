@@ -850,9 +850,12 @@ struct DpuThread : public MyThread {
         unsigned int uns_confidence = (unsigned int) confidence*100;
         unsigned int uns_label = (unsigned int) label;
         // 位移
-        tmpCnt = uns_xmin + (uns_ymin << 10) + (uns_xmax << 20) + (uns_ymax << 30) + ((uns_confidence) << 40) + (uns_label << 50);
-        ToR0[0] = tmpCnt;
-        ToR1[0] = tmpCnt;
+        ToR0[0] = uns_xmin;
+        ToR0[1] = uns_ymin;
+        ToR0[2] = uns_xmax;
+        ToR0[3] = uns_ymax;
+        ToR0[4] = uns_confidence;
+        ToR0[5] = uns_label;
         cout << "CHECK: uns_label | uns_xmin | uns_ymin | uns_xmax  | uns_ymax | uns_confidence | tmpCnt | ToR0[0] | ToR1[0]\n";
         cout << "CHECK: " << uns_label << "\t" << uns_xmin << "\t" << uns_ymin << "\t"
               << uns_xmax << "\t" << uns_ymax << "\t" << uns_confidence << "\t"<< tmpCnt << "\t"<< ToR0[0]<< "\t" << ToR1[0] << "\n";

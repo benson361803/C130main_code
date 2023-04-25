@@ -61,6 +61,7 @@
 #include "xscugic.h"
 // SPI controller headers
 
+
 #define SHARED_RAM_POS_R0toR1 0x70000000
 #define SHARED_RAM_POS_R1toR0 0x70100000
 #define SHARED_RAM_POS_AtoR0 0x70200000
@@ -71,10 +72,12 @@
 
 #define NS550CrossTest
 
-#define TTC_TICK_DEVICE_ID	XPAR_XTTCPS_3_DEVICE_ID
-#define TTC_TICK_INTR_ID	XPAR_XTTCPS_3_INTR
+#define TTC_TICK_DEVICE_ID	XPAR_XTTCPS_2_DEVICE_ID
+#define TTC_TICK_INTR_ID	XPAR_XTTCPS_2_INTR
 
-#define TTCPS_CLOCK_HZ		XPAR_XTTCPS_3_CLOCK_HZ
+#define TTC_PWM_DEVICE_ID	XPAR_XTTCPS_2_DEVICE_ID
+#define TTC_PWM_INTR_ID		XPAR_XTTCPS_2_INTR
+#define TTCPS_CLOCK_HZ		XPAR_XTTCPS_2_CLOCK_HZ
 
 #define INTC_DEVICE_ID		XPAR_SCUGIC_SINGLE_DEVICE_ID
 
@@ -154,7 +157,6 @@ static TmrCntrSetup SettingsTable[NUM_DEVICES] = {
 	{300, 0, 0, 0},	/* Ticker timer counter initial setup, only output freq */
 	{600, 0, 0, 0}, /* PWM timer counter initial setup, only output freq */
 	{600, 0, 0, 0}, /* PWM timer counter initial setup, only output freq */
-	{600, 0, 0, 0}, /* PWM timer counter initial setup, only output freq */
 };
 
 
@@ -174,20 +176,20 @@ void Inter_Timer_Intr(void);
 
 int main()
 {
-	int * ToR0 = (int*) SHARED_RAM_POS_R1toR0;
-	int * RtnR0 = (int*) SHARED_RAM_POS_R0toR1;
-	int * RtnApu = (int*) SHARED_RAM_POS_AtoR1;
-	int * ToApu = (int*) SHARED_RAM_POS_R1toA;
+	int * ToR1 = (int*) SHARED_RAM_POS_R0toR1;
+	int * RtnR1 = (int*) SHARED_RAM_POS_R1toR0;
+	int * RtnApu = (int*) SHARED_RAM_POS_AtoR0;
+	int * ToApu = (int*) SHARED_RAM_POS_R0toA;
 
-	ToR0[0] = 0;
+	ToR1[0] = 0;
 	ToApu[0] = 0;
-
 
     Xil_DCacheFlush();
 
-    //xil_printf("This is SIFC IO platform test \r\n");
+    xil_printf("This is SIFC IO platform test \r\n");
 
     TTCTest();
+
 
     long counter = 0;
     while (1){
@@ -195,8 +197,12 @@ int main()
     	//printf("alive\r\n");
     }
 
+
+
+
     return 0;
 }
+
 
 
 
@@ -208,29 +214,31 @@ void Inter_Timer_Intr(void)
    static unsigned char D20Hz_cnt=0;
    static unsigned char D100Hz_cnt=0;
    static unsigned char D200Hz_cnt=0;
-   int * ToR0 = (int*) SHARED_RAM_POS_R1toR0;
-   int * RtnR0 = (int*) SHARED_RAM_POS_R0toR1;
-   int * RtnApu = (int*) SHARED_RAM_POS_AtoR1;
-   int * ToApu = (int*) SHARED_RAM_POS_R1toA;
+   int * ToR1 = (int*) SHARED_RAM_POS_R0toR1;
+   int * RtnR1 = (int*) SHARED_RAM_POS_R1toR0;
+   int * RtnApu = (int*) SHARED_RAM_POS_AtoR0;
+   int * ToApu = (int*) SHARED_RAM_POS_R0toA;
    unsigned int i;
 
 
-   for(i=0;i<128;i++)
-   {
-      ToR0[i] = ToR0[i] + 1 ;
-      ToApu[i] = ToApu[i] + 3;
-   }
-
    if (counter == 199){
-	   //printf("Run RPU1 600 ticks reached. FromR0: %d FromAPU: %d \r\n", RtnR0[0], RtnApu[0]);
-	   printf("1110930 Run RPU1 200 ticks reached(gcounter: %d ). to R0: %d Apu: %d from R0: %d Apu: %d\r\n",g_counter,ToR0[0], ToApu[0], RtnR0[0], RtnApu[0]);
-	   counter = 0;
+//	   printf("1110930 Run RPU0 200 ticks reached(gcounter: %d ). to R1: %d Apu: %d from R1: %d Apu: %d\r\n",g_counter,ToR1[0], ToApu[0], RtnR1[0], RtnApu[0]);
+	   printf("CHECK: label | xmin | ymin | xmax  | ymax | confidence | label\n");
+	   printf("\t %u \t %u \t %u \t %u \t %u \t %u \n",RtnApu[0] , RtnApu[1] , RtnApu[2] , RtnApu[3]  , RtnApu[4] , RtnApu[5]);
+
+//	   printf("1120425 Run RPU0 200 ticks reached(gcounter: %d ). to R1: %d Apu: %d from R1: %d Apu: %d\r\n",g_counter,ToR1[0], ToApu[0], RtnR1[0], RtnApu[0]);
+
+
+
+
 	   g_counter +=1;
+	   counter = 0;
    }else{
 	   counter += 1;
 
    }
 
+   //shmptr[0] = rtnptr[0];
    Xil_DCacheFlush();
    if((D100Hz_cnt%6)==0)
    {
@@ -286,7 +294,6 @@ int TTCTest(){
 	if (Status != XST_SUCCESS) {
 		return XST_FAILURE;
 	}
-	//printf("setup interrupt IP\r\n");
 
 	/*
 	 * Set up the Ticker timer
@@ -295,7 +302,6 @@ int TTCTest(){
 	if (Status != XST_SUCCESS) {
 		return Status;
 	}
-	//printf("setup ticker\r\n");
 
 	return XST_SUCCESS;
 }
@@ -517,6 +523,23 @@ static void TickHandler(void *CallBackRef, u32 StatusEvent)
 
 	Inter_Timer_Intr();
 
+/*
+	Test_Hzcnt++;
+
+	if((Test_Hzcnt%2)==0)
+	{
+		XGpioPs_WritePin(&Gpio, 23, 0x0);
+		XGpioPs_WritePin(&Gpio, 24, 0x0);
+		XGpioPs_WritePin(&Gpio, 25, 0x0);
+	}
+	else
+	{
+		XGpioPs_WritePin(&Gpio, 23, 0x1);
+		XGpioPs_WritePin(&Gpio, 24, 0x1);
+		XGpioPs_WritePin(&Gpio, 25, 0x1);
+	}
+
+*/
 
 	if (0 != (XTTCPS_IXR_INTERVAL_MASK & StatusEvent)) {
 		TickCount++;
@@ -535,4 +558,41 @@ static void TickHandler(void *CallBackRef, u32 StatusEvent)
 		ErrorCount++;
 	}
 }
+
+/***************************************************************************/
+/**
+*
+* This function is the handler which handles the PWM interrupt.
+*
+* It updates the match register to reflect the change on duty cycle. It also
+* disable interrupt at the end. The interrupt will be enabled by the Ticker
+* timer counter.
+*
+* @param	CallBackRef contains a callback reference from the driver, in
+*		this case it is a pointer to the MatchValue variable.
+*
+* @return	None.
+*
+* @note		None.
+*
+*****************************************************************************/
+static void PWMHandler(void *CallBackRef, u32 StatusEvent)
+{
+	XTtcPs *Timer;
+
+	Timer = &(TtcPsInst[TTC_PWM_DEVICE_ID]);
+
+	if (0 != (XTTCPS_IXR_INTERVAL_MASK & StatusEvent)) {
+		XTtcPs_SetMatchValue(Timer, 0, MatchValue);
+	}
+	else {
+		/*
+		 * If it is not Interval event, it is an error.
+		 */
+		ErrorCount++;
+	}
+
+	XTtcPs_DisableInterrupts(Timer, XTTCPS_IXR_ALL_MASK);
+}
+
 

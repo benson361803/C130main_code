@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ASCII"?>
+<sdkproject:SdkProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdkproject="http://www.xilinx.com/sdkproject" name="r1app" location="/mnt/hdd1/vitis2021_2/Vitis/2021.2/rpu_xd1_2_pkg/r1app" platform="/mnt/hdd1/vitis2021_2/Vitis/2021.2/rpu_xd1_2_pkg/system_wrapper_1/export/system_wrapper_1/system_wrapper_1.xpfm" platformUID="xilinx:zcu104:zcu104_rpu_hw:0.0(custom)" systemProject="r1app_system" sysConfig="system_wrapper_1" runtime="cpp" cpu="standalone_psu_cortexr5_1" cpuInstance="psu_cortexr5_1" os="standalone" mssSignature="49427d56d2daa90f26633635c8791080">
+  <configuration name="Debug" id="xilinx.gnu.arm.r5.exe.debug.948868798">
+    <configBuildOptions xsi:type="sdkproject:SdkOptions"/>
+    <lastBuildOptions xsi:type="sdkproject:SdkOptions"/>
+  </configuration>
+  <configuration name="Release" id="xilinx.gnu.arm.r5.exe.release.1237012911" dirty="true">
+    <configBuildOptions xsi:type="sdkproject:SdkOptions"/>
+  </configuration>
+  <template appTemplateName="hello_world"/>
+</sdkproject:SdkProject>
